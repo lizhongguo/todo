@@ -1,4 +1,7 @@
-- [ ] TaskTree UnfinishedView单例模式
+- [ ] 单元测试
+- [ ] 类图
+- [ ] 以后发展方向： Finished和Unfinished任务分离，多用户任务树(权限与同步)，任务修改缓存机制
+- [ ] TaskTree UnfinishedView单例模式 延后，先实现状态更新
 - [ ] TaskTree 创建View后TaskTree不能修改
 - [ ] TaskTree View finalize修改同步到TaskTree
 - [ ] TaskTree 状态更新
@@ -6,3 +9,4 @@
 - [ ] TaskTree 多用户支持
 - [ ] TaskTree 用户同步
 - [ ] todo todo用户界面，javafx或者直接web?但是web不知到啥框架好。
+[类图](classDiagram.md)
