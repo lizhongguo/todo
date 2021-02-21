@@ -3,11 +3,18 @@ package cn.lzg;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.junit.Test;
 import java.util.*;
 import java.sql.*;
 import java.util.Date;
+
+//mybatis
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.*;
+
+
 /**
  * Unit test for simple App.
  */
@@ -58,50 +65,71 @@ public class AppTest
             TaskTreeManager ttm = new TaskTreeManager();
             ttm.printTaskTree();
                        
-            String id1 = ttm.create_task("Test job 1", new Date(), new Date(2021,12,1));
-            String id11 = ttm.create_task("Test job 11", new Date(), new Date(2021,12,1), id1);
-            String id12 = ttm.create_task("Test job 12", new Date(), new Date(2021,12,1), id1);
-            String id121 = ttm.create_task("Test job 121", new Date(), new Date(2021,12,1), id12);
+            String id1 = ttm.createTask("Test job 1", new Date(), new Date(121,12,1));
+            String id11 = ttm.createTask("Test job 11", new Date(), new Date(121,12,1), id1);
+            String id12 = ttm.createTask("Test job 12", new Date(), new Date(121,12,1), id1);
+            String id121 = ttm.createTask("Test job 121", new Date(), new Date(121,12,1), id12);
 
             System.out.println(id1);
             System.out.println(id11);
             System.out.println(id12);
             System.out.println(id121);
 
-            assertTrue("get desc", ttm.get_description(id12).equals("Test job 12"));
+            assertTrue("get desc", ttm.getDescription(id12).equals("Test job 12"));
             
             //测试set_taskFinished
-            assertTrue("get state", !ttm.is_finished(id1));
-            assertTrue("get state", !ttm.is_finished(id11));
+            assertTrue("get state", !ttm.isFinished(id1));
+            assertTrue("get state", !ttm.isFinished(id11));
         try{
-            ttm.set_taskFinished(id121);
+            ttm.setTaskFinished(id121);
         }catch(IOException e){
             e.printStackTrace();
         }
 
-        assertTrue("get state", ttm.is_finished(id121));
-            assertTrue("get state", ttm.is_finished(id12));
-            assertTrue("get state", !ttm.is_finished(id1));
+        assertTrue("get state", ttm.isFinished(id121));
+            assertTrue("get state", ttm.isFinished(id12));
+            assertTrue("get state", !ttm.isFinished(id1));
 
             //测试set_taskUnfinished
         try{
-            ttm.set_taskUnfinished(id121);
+            ttm.setTaskUnfinished(id121);
         }catch(IOException e){
             e.printStackTrace();
         }
-            assertTrue("get state", !ttm.is_finished(id121));
-            assertTrue("get state", !ttm.is_finished(id11));
-            assertTrue("get state", !ttm.is_finished(id1));
+            assertTrue("get state", !ttm.isFinished(id121));
+            assertTrue("get state", !ttm.isFinished(id11));
+            assertTrue("get state", !ttm.isFinished(id1));
             ttm.printTaskTree();
-            ttm.remove_task(id12, true);
-            assertTrue("sons of root", ttm.get_sons(ttm.get_rootId()).size()==1);
+            ttm.removeTask(id12, true);
+            assertTrue("sons of root", ttm.getSons(ttm.getRootId()).size()==1);
             ttm.printTaskTree();
-            ttm.remove_task(id1, false);
-            assertTrue("sons of root", ttm.get_sons(ttm.get_rootId()).size()==0);
+            ttm.removeTask(id1, false);
+            assertTrue("sons of root", ttm.getSons(ttm.getRootId()).size()==0);
             ttm.printTaskTree();
             ttm.save();
         }catch(IOException e){
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void testMybatis() throws Exception{
+          String resource = "cn/lzg/HSQLDB_config.xml";
+          InputStream inputStream = Resources.getResourceAsStream(resource);
+          SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+
+          try(SqlSession session = sqlSessionFactory.openSession()){
+              //创建mapper接口
+              TaskMapper mapper = session.getMapper(TaskMapper.class);
+              if(mapper.isTableExisted()<=0){
+                mapper.createTaskTable();
+                session.flushStatements();
+              }
+              Set<Task> tasks = mapper.getUnfinishedTask();
+              for(Task task:tasks){
+                System.out.println(task);
+              }
+              session.commit();
+          } 
     }
 }

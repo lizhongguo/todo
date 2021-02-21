@@ -28,7 +28,7 @@ public class TaskTree {
         }
 
         for(Task task:saved_task){
-            id2task.put(task.get_id(), task);
+            id2task.put(task.getId(), task);
         }
         buildTree();
     }
@@ -38,49 +38,49 @@ public class TaskTree {
 
         for(Map.Entry<String,Task> e: id2task.entrySet()){
             task = e.getValue();
-            if(task.get_id().equals(task.get_parent())){
-                rootId = task.get_id();
+            if(task.getId().equals(task.getParent())){
+                rootId = task.getId();
             }else{
-                set_rel(task.get_id(), task.get_parent());
+                setRel(task.getId(), task.getParent());
             }
         }
     }
 
-    public String get_rootId(){
+    public String getRootId(){
         return rootId;
     }
 
-    public void add_task(Task task) throws IOException{
+    public void addTask(Task task) throws IOException{
         //加入的任务将作为root子节点
-        if(id2task.get(task.get_id())==null)
-            id2task.put(task.get_id(), task);
-        set_rel(task.get_id(), task.get_parent());   
+        if(id2task.get(task.getId())==null)
+            id2task.put(task.getId(), task);
+        setRel(task.getId(), task.getParent());   
         saver.save_task(task);    
     }
 
     //task建立父子关系
-    public void set_rel(String son, String parent) throws IOException{
+    public void setRel(String son, String parent) throws IOException{
         if(son==null || parent==null)throw new IOException("Null UUID");
         if(son.equals(parent))throw new IOException("Invalid Relationship");
 
         //检查是否会形成环，son在树中不能是parent的祖先
-        String grand = get_parent(parent);
+        String grand = getParent(parent);
         while(true){
             if(son.equals(grand)){
                 throw new IOException("Invalid Relationship");
             }
-            if(grand.equals(get_parent(grand)))break;
-            grand = get_parent(grand);
+            if(grand.equals(getParent(grand)))break;
+            grand = getParent(grand);
         }
 
-        String oldParent = get_parent(son);
-        get_sons(oldParent).remove(son);
-        get_task(son).set_parent(parent);
-        get_sons(parent).add(son);
-        saver.save_task(get_task(son));
+        String oldParent = getParent(son);
+        getSons(oldParent).remove(son);
+        getTask(son).setParent(parent);
+        getSons(parent).add(son);
+        saver.save_task(getTask(son));
     }
 
-    public TreeSet<String> get_sons(String parent){
+    public TreeSet<String> getSons(String parent){
         TreeSet<String> ts = taskTree.get(parent);
         if(ts==null){
             ts = new TreeSet<>();
@@ -89,100 +89,100 @@ public class TaskTree {
         return ts;
     }
 
-    public String get_parent(String son){
-        return get_task(son).get_parent();
+    public String getParent(String son){
+        return getTask(son).getParent();
     }
 
-    public final Task get_task(String taskId){
+    public final Task getTask(String taskId){
         return id2task.get(taskId);
     }
 
-    public void get_descendant(String anc, Set<String> descendant){
-        for(String son:get_sons(anc)){
-            get_descendant(son, descendant);
+    public void getDescendant(String anc, Set<String> descendant){
+        for(String son:getSons(anc)){
+            getDescendant(son, descendant);
         }
         descendant.add(anc);
     }
 
-    public Set<String> get_descendant(String anc){
+    public Set<String> getDescendant(String anc){
         HashSet<String> descendant = new HashSet<>();
-        get_descendant(anc, descendant);
+        getDescendant(anc, descendant);
         return descendant;
     }
 
-    public void remove_task (String taskId, boolean keep_son) throws IOException{
+    public void removeTask (String taskId, boolean keep_son) throws IOException{
         if(taskId.equals(rootId))return;
-        String parent = get_parent(taskId);
-        TreeSet<String> sons = get_sons(taskId);
+        String parent = getParent(taskId);
+        TreeSet<String> sons = getSons(taskId);
         if(!keep_son){
             //不能写成迭代式的
-            for(String desc:get_descendant(taskId)){
+            for(String desc:getDescendant(taskId)){
                 if(desc.equals(taskId))continue;
-                saver.remove_task(get_task(desc));
+                saver.remove_task(getTask(desc));
                 id2task.remove(desc);
                 taskTree.remove(desc);
             }
         }else{
             for(String son:sons){
-                set_rel(son, parent);
+                setRel(son, parent);
             }
         }
-        get_sons(parent).remove(taskId);
-        saver.remove_task(get_task(taskId));
+        getSons(parent).remove(taskId);
+        saver.remove_task(getTask(taskId));
         id2task.remove(taskId);
         taskTree.remove(taskId);
     }
 
-    public void set_taskFinished(String taskId) throws IOException{
-        if(taskId.equals(get_rootId()))return;
+    public void setTaskFinished(String taskId) throws IOException{
+        if(taskId.equals(getRootId()))return;
         //check its sons are all finished
-        for(String son:get_sons(taskId)){
-            if(get_task(son).get_taskState()!=Task.State.FINISHED){
+        for(String son:getSons(taskId)){
+            if(getTask(son).getTaskState()!=Task.State.FINISHED){
             //子任务未完成，拒绝更改
                 throw new IOException("Illegal State Uppdate");
             }
         }
-        set_taskState(taskId,Task.State.FINISHED);
-        set_taskFinished(get_parent(taskId));
+        setTaskState(taskId,Task.State.FINISHED);
+        setTaskFinished(getParent(taskId));
 
-        saver.save_task(get_task(taskId));
+        saver.save_task(getTask(taskId));
     }
 
     //可能出现子任务均完成，但是父任务未完成的情况
-    public void set_taskUnfinished(String taskId) throws IOException{
+    public void setTaskUnfinished(String taskId) throws IOException{
         //make its parent unfinished too
-        TreeSet<String> sons = get_sons(taskId);
+        TreeSet<String> sons = getSons(taskId);
         //如果任务不是叶子节点，则任务状态不改变
         if(!sons.isEmpty())throw new IOException("Illegal State Update");
         //所有祖先节点设置为未完成
-        while(!taskId.equals(get_rootId())){
-            set_taskState(taskId,Task.State.UNFINISHED);
-            saver.save_task(get_task(taskId));
+        while(!taskId.equals(getRootId())){
+            setTaskState(taskId,Task.State.UNFINISHED);
+            saver.save_task(getTask(taskId));
 
-            taskId = get_parent(taskId);
+            taskId = getParent(taskId);
         }
 
     }
 
-    public void set_description(String taskId,String desc){
-        get_task(taskId).set_description(desc);
+    public void setDescription(String taskId,String desc){
+        getTask(taskId).setDescription(desc);
         //写缓存
-        saver.save_task(get_task(taskId));
+        saver.save_task(getTask(taskId));
     }
 
-    public void set_createTime(String taskId,Date date){
-        get_task(taskId).set_createTime(date);
-        saver.save_task(get_task(taskId));
+    public void setCreatetime(String taskId,Date date){
+        getTask(taskId).setCreatetime(date);
+        saver.save_task(getTask(taskId));
     }
 
-    public void set_deadline(String taskId,Date date){
-        get_task(taskId).set_deadline(date);
-        saver.save_task(get_task(taskId));
+    public void setDeadline(String taskId,Date date){
+        getTask(taskId).setDeadline(date);
+        saver.save_task(getTask(taskId));
     }
 
-    public void set_taskState(String taskId,Task.State s){
-        get_task(taskId).set_taskState(s);
-        saver.save_task(get_task(taskId));
+    public void setTaskState(String taskId,Task.State s){
+        getTask(taskId).setTaskState(s);
+        saver.save_task(getTask(taskId));
     }
 
     public void save(){

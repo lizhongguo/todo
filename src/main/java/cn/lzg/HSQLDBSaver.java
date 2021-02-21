@@ -3,11 +3,11 @@ import java.util.*;
 import java.sql.*;
 
 
-public class HSQLDB_Saver extends Saver {
+public class HSQLDBSaver extends Saver {
     private PreparedStatement ps_update,ps_delete,ps_append,ps_select;
-    private final String sql_create = "CREATE TABLE TASK (id VARCHAR(64) PRIMARY KEY,description VARCHAR(1048576),parent VARCHAR(64), createTime DATETIME, finishedTime DATETIME, deadLine DATETIME, taskState INTEGER)";
+    private final String sql_create = "CREATE TABLE TASK (id VARCHAR(64) PRIMARY KEY,description VARCHAR(1048576),parent VARCHAR(64), createtime DATETIME, finishedtime DATETIME, deadline DATETIME, taskState INTEGER)";
 
-    private final String sql_update = "UPDATE TASK SET description=?,parent=?,createTime=?,finishedTime=?,deadLine=?,taskState=? WHERE id = ?";
+    private final String sql_update = "UPDATE TASK SET description=?,parent=?,createtime=?,finishedtime=?,deadline=?,taskState=? WHERE id = ?";
     private final String sql_append = "INSERT INTO TASK VALUES(?,?,?,?,?,?,?)";
     private final String sql_delete = "DELETE FROM TASK WHERE id = ?";
     private final String sql_select = "SELECT * FROM TASK WHERE taskState = ?";
@@ -25,7 +25,7 @@ public class HSQLDB_Saver extends Saver {
         }
     }
 
-    public HSQLDB_Saver(){
+    public HSQLDBSaver(){
         try{
             Connection conn = sqlConnection.get();
             DatabaseMetaData dbm = conn.getMetaData();
@@ -79,12 +79,12 @@ public class HSQLDB_Saver extends Saver {
     public void update_task(String taskId){
         try{
             Task task = get_cached_task(taskId);
-            ps_update.setString(1, task.get_description());
-            ps_update.setString(2, task.get_parent());
-            ps_update.setTimestamp(3, new java.sql.Timestamp(task.get_createTime().getTime()));
-            ps_update.setTimestamp(4, new java.sql.Timestamp(task.get_finishedTime().getTime()));
-            ps_update.setTimestamp(5, new java.sql.Timestamp(task.get_deadLine().getTime()));
-            ps_update.setInt(6, task.get_taskState().ordinal());
+            ps_update.setString(1, task.getDescription());
+            ps_update.setString(2, task.getParent());
+            ps_update.setTimestamp(3, new java.sql.Timestamp(task.getCreatetime().getTime()));
+            ps_update.setTimestamp(4, new java.sql.Timestamp(task.getFinishedtime().getTime()));
+            ps_update.setTimestamp(5, new java.sql.Timestamp(task.getDeadline().getTime()));
+            ps_update.setInt(6, task.getTaskState().ordinal());
             ps_update.setString(7, taskId);
             ps_update.addBatch();
         }catch(Exception e){
@@ -105,12 +105,12 @@ public class HSQLDB_Saver extends Saver {
         try{
             Task task = get_cached_task(taskId);
             ps_append.setString(1, taskId);
-            ps_append.setString(2, task.get_description());
-            ps_append.setString(3, task.get_parent());
-            ps_append.setTimestamp(4, new java.sql.Timestamp(task.get_createTime().getTime()));
-            ps_append.setTimestamp(5, new java.sql.Timestamp(task.get_finishedTime().getTime()));
-            ps_append.setTimestamp(6, new java.sql.Timestamp(task.get_deadLine().getTime()));
-            ps_append.setInt(7, task.get_taskState().ordinal());
+            ps_append.setString(2, task.getDescription());
+            ps_append.setString(3, task.getParent());
+            ps_append.setTimestamp(4, new java.sql.Timestamp(task.getCreatetime().getTime()));
+            ps_append.setTimestamp(5, new java.sql.Timestamp(task.getFinishedtime().getTime()));
+            ps_append.setTimestamp(6, new java.sql.Timestamp(task.getDeadline().getTime()));
+            ps_append.setInt(7, task.getTaskState().ordinal());
             ps_append.addBatch();
         }catch(Exception e){
             e.printStackTrace();

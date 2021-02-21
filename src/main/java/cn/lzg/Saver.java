@@ -5,37 +5,37 @@ public abstract class Saver{
     public abstract Set<Task> get_unfinished_task();
 
     private HashMap<String,Task> task_cache = new HashMap<>();
-    private TreeSet<String> changed = new TreeSet<>();
-    private TreeSet<String> deleted = new TreeSet<>();
-    private TreeSet<String> appended = new TreeSet<>();
+    protected TreeSet<String> changed = new TreeSet<>();
+    protected TreeSet<String> deleted = new TreeSet<>();
+    protected TreeSet<String> appended = new TreeSet<>();
 
     public Set<Task> get_task(){
         Set<Task> unfinished_task =  get_unfinished_task();
         for(Task task:unfinished_task){
-            task_cache.put(task.get_id(),task);
+            task_cache.put(task.getId(),task);
         }
         return unfinished_task;
     }
 
     public void save_task(Task task){
-        if(changed.contains(task.get_id())){
+        if(changed.contains(task.getId())){
             return;
         }
 
-        if(task_cache.containsKey(task.get_id())){
-            if(appended.contains(task.get_id()))return;
-            changed.add(task.get_id());
+        if(task_cache.containsKey(task.getId())){
+            if(appended.contains(task.getId()))return;
+            changed.add(task.getId());
             return;
         }
-        appended.add(task.get_id());
-        task_cache.put(task.get_id(), task);
+        appended.add(task.getId());
+        task_cache.put(task.getId(), task);
     }
 
     public void remove_task(Task task){
-        deleted.add(task.get_id());
-        changed.remove(task.get_id());
-        appended.remove(task.get_id());
-        task_cache.remove(task.get_id());
+        deleted.add(task.getId());
+        changed.remove(task.getId());
+        appended.remove(task.getId());
+        task_cache.remove(task.getId());
     }
 
     //delete task and rel in deleted

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.lzg.TaskMapper" >
+    <select id="getUnfinishedTask" resultMap="taskResultMap">
+        SELECT * FROM TASK WHERE taskState = 0;
+    </select>
+
+    <resultMap id="taskResultMap" type="task">
+        <id property="id" column="id" javaType="String" jdbcType="VARCHAR" />
+        <result property="description"  column="description" javaType="String" jdbcType="VARCHAR" />
+        <result property="parent" column="parent"  javaType="String" jdbcType="VARCHAR" />
+        <result property="createtime" column="createtime" javaType="Date" jdbcType="TIMESTAMP" />
+        <result property="finishedtime" column="finishedtime" javaType="Date" jdbcType="TIMESTAMP" />
+        <result property="deadline" column="deadline" javaType="Date" jdbcType="TIMESTAMP" />
+
+        <result property="taskState" column="taskState" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />        
+    </resultMap>
+
+    <insert id="insertTask" parameterType="task">
+        INSERT INTO TASK VALUES (#{id},#{description},#{parent}, #{createtime}, #{finishedtime}, #{deadline}, #{taskState,jdbcType=INTEGER, typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler} );
+    </insert>
+
+    <update id="updateTask" parameterType="task">
+        UPDATE TASK SET description=#{description},parent=#{parent},createtime=#{createtime},finishedtime=#{finishedtime},deadline=#{deadline},taskState=#{taskState,jdbcType=INTEGER, typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler} WHERE id=#{id};
+    </update>
+
+    <delete id="deleteTask" parameterType="task">
+        DELETE FROM TASK WHERE id = #{id};
+    </delete>
+
+    <update id="createTaskTable">
+        CREATE TABLE TASK (id VARCHAR(64) PRIMARY KEY,description TEXT,parent VARCHAR(64), createtime TIMESTAMP, finishedtime TIMESTAMP, deadline TIMESTAMP, taskState INTEGER);
+    </update>
+
+    <select id="isTableExisted" resultType="int">select count(*) from information_schema.TABLES where TABLE_NAME = 'TASK';
+    </select>
+</mapper>

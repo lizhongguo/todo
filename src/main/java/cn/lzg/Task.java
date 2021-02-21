@@ -11,12 +11,24 @@ public class Task {
     private String description;
     private String id;
     private String parent;
-    private Date createTime;
-    private Date finishedTime;
-    private Date deadLine;
+    private Date createtime;
+    private Date finishedtime;
+    private Date deadline;
 
     //没必要区分WAITED和OVERTIME
-    enum State{UNFINISHED,FINISHED};
+    public static enum State{UNFINISHED(0),FINISHED(1);
+        private int value;
+        private State(int i){
+            value = i;
+        }
+
+        public void setValue(int v){
+            this.value = v;
+        }
+        public int getValue(){
+            return this.value;
+        }
+    };
     private State taskState;
 
     /*
@@ -34,69 +46,69 @@ public class Task {
     public Task(String id, String desc, String parent,  Date cT, Date dL){
         description = desc;
         this.id = id;
-        createTime = cT;
-        deadLine = dL;   
+        createtime = cT;
+        deadline = dL;   
         taskState = State.UNFINISHED;
         this.parent = parent;
-        finishedTime = new Date();
+        finishedtime = new Date();
     }
 
-    public String get_id(){
+    public String getId(){
         return id;
     }
 
-    public String get_description(){
+    public String getDescription(){
         return description;
     }
 
-    public String get_parent(){
+    public String getParent(){
         return parent;
     }
 
-    public void set_parent(String parent){
+    public void setParent(String parent){
         this.parent = parent;
     }
 
-    public void set_description(String desc){
+    public void setDescription(String desc){
         description=desc;
     }
 
-    public void set_createTime(Date date){
-        createTime = date;
+    public void setCreatetime(Date date){
+        createtime = date;
     }
 
-    public Date get_createTime(){
-        return createTime;
+    public Date getCreatetime(){
+        return createtime;
     }
 
-    public void set_deadline(Date date){
-        deadLine = date;
+    public void setDeadline(Date date){
+        deadline = date;
     }
 
-    public Date get_deadLine(){
-        return deadLine;
+    public Date getDeadline(){
+        return deadline;
     }
 
-    public void set_finishedTime(Date date){
-        finishedTime = date;
+    public void setFinishedtime(Date date){
+        finishedtime = date;
     }
 
-    public Date get_finishedTime(){
-        return finishedTime;
+    public Date getFinishedtime(){
+        return finishedtime;
     }
 
-    public void set_taskState(State s){
-        if(s.equals(State.FINISHED))set_finishedTime(new Date());
+    public void setTaskState(State s){
+        if(s.equals(State.FINISHED))setFinishedtime(new Date());
         taskState = s;
     }
 
-    public State get_taskState(){
+    public State getTaskState(){
         return taskState;
     }
 
     @Override
     public String toString(){
         return String.format("{type:Task,description:%s,id:%s,parentId:%s,createTime:%s,deadLine:%s,state:%s}", 
-            description,id,parent,createTime.toString(),deadLine.toString(),taskState.toString());
+            description,id,parent,createtime.toString(),deadline.toString(),taskState.toString());
     }
 }
